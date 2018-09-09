@@ -1,0 +1,10 @@
+{
+  "name": "versus",
+  "version": "0.1.0",
+  "description": "Find alternatives",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "jasoncrawford",
+  "license": "MIT"
+}
