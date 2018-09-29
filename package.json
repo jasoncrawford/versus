@@ -6,7 +6,7 @@
     "express": "4.x"
   },
   "engines": {
-    "node" : "6.9.x"
+    "node" : "10.10.x"
   },
   "scripts": {
     "start": "node server.js"
