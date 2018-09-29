@@ -88,9 +88,7 @@ class Versus {
 
   findAlternatives(term) {
     this.outstandingFindCount++;
-    console.log(`finding alternatives for ${term}, ${this.outstandingFindCount} outstanding`);
     this.fetchAlternatives(term, alternatives => {
-      console.log(`found ${alternatives.length} alternatives for ${term}, ${this.outstandingFindCount-1} outstanding`);
       this.processAlternatives(term, alternatives);
       this.outstandingFindCount--;
       this.render();
