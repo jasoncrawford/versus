@@ -55,6 +55,12 @@ class Versus {
   render() {
     let options = this.options;
     let output = this.output;
+
+    if (!this.seed) {
+      output.empty();
+      return;
+    }
+
     let keys = this.sortedOptionKeys();
 
     let elements = keys.map(key => this.renderOption(key))
@@ -87,6 +93,7 @@ class Versus {
   }
 
   findAlternatives(term) {
+    if (!term) return;
     this.outstandingFindCount++;
     this.fetchAlternatives(term, alternatives => {
       this.processAlternatives(term, alternatives);
@@ -97,8 +104,7 @@ class Versus {
 
   start() {
     let seed = this.seed;
-    if (!seed) return;
-    this.options[seed] = {depth: 0, count: 1};
+    if (seed) this.options[seed] = {depth: 0, count: 1};
     this.render();
     this.findAlternatives(seed);
   }
@@ -121,12 +127,10 @@ $(document).ready(() => {
   function updateFromParams() {
     console.log('updating from params', window.location)
     let params = new URLSearchParams(window.location.search);
-    if (params.has('seed')) {
-      let seed = params.get('seed');
-      input.val(seed);
-      let versus = new Versus(seed, output);
-      versus.start();
-    }
+    let seed = params.get('seed');
+    input.val(seed);
+    let versus = new Versus(seed, output);
+    versus.start();
   }
 
   window.onpopstate = event => {
