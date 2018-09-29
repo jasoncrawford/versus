@@ -25,8 +25,7 @@ const get = url => {
   })
 };
 
-const fetchCompletions = async term => {
-  let q = `${term} vs `;
+const fetchCompletions = async q => {
   let queryString = querystring.stringify({q, client: 'psy-ab'});
   let url = `https://www.google.com/complete/search?${queryString}`;
   let body = await get(url);
@@ -35,8 +34,10 @@ const fetchCompletions = async term => {
 }
 
 const findAlternatives = async term => {
-  let completions = await fetchCompletions(term);
+  let q = `${term} vs `;
+  let completions = await fetchCompletions(q);
   let alternatives = completions.map(completion => {
+    if (!completion.startsWith(q.trim())) return []; // filter anything that's not a true completion
     let text = completion.replace(/\<\/?b\>/g, ''); // strip bold tags
     return text.split(/\s*\bvs\b\s*/);    // split on 'vs'
   })
