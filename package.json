@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "description": "Find alternatives",
   "dependencies": {
-    "express": "4.x",
-    "html-entities": "^1.2.1"
+    "express": "~4.16.3",
+    "html-entities": "~1.2.1"
   },
   "engines": {
-    "node": "10.10.x"
+    "node": "~10.10.0"
   },
   "scripts": {
     "start": "node server.js"
