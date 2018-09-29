@@ -59,7 +59,7 @@ app.get('/alternatives', async (request, response) => {
     let alternatives = await findAlternatives(term);
     response.send(alternatives);
   } catch (error) {
-    repsonse.status(500).send(error.message);
+    response.status(500).send(error.message);
   }
 })
 

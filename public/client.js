@@ -22,7 +22,10 @@ class VersusModel {
     let url = `/alternatives?${queryString}`;
     $.ajax(url, {
       success: callback,
-      error: (xhr, status) => alert(`error: ${status}`),
+      error: (xhr, status) => {
+        let detail = xhr && `${xhr.statusText}: ${xhr.responseText}`;
+        this.callDelegateWithError(detail);
+      },
     })
   }
 
@@ -42,6 +45,11 @@ class VersusModel {
   callDelegate() {
     if (!this.delegate) return;
     this.delegate.onAlternativesUpdated();
+  }
+
+  callDelegateWithError(detail) {
+    if (!this.delegate) return;
+    this.delegate.onErrorFetchingAlternatives(detail);
   }
 
   findAlternatives(term) {
@@ -93,6 +101,10 @@ class VersusView {
     return '<span class="chain-link"> &larr; <span class="chain-link-key"></span></span>';
   }
 
+  get errorMessageTemplate() {
+    return '<div><p class="error-header">Error fetching alternatives 😫</p><p class="error-detail"></p></div>';
+  }
+
   googleSearchUrl(q) {
     return `https://www.google.com/search?${$.param({q})}`
   }
@@ -118,6 +130,10 @@ class VersusView {
 
   onAlternativesUpdated() {
     this.render();
+  }
+
+  onErrorFetchingAlternatives(detail) {
+    this.renderError(detail);
   }
 
   renderOptionCount(keys) {
@@ -166,6 +182,16 @@ class VersusView {
 
     this.output.empty();
     this.output.append(elements);
+  }
+
+  renderError(detail) {
+    let errorMessage = $(this.errorMessageTemplate);
+    if (detail) {
+      errorMessage.find('.error-detail').text(detail);
+    }
+
+    this.output.empty();
+    this.output.append(errorMessage);
   }
 }
 
