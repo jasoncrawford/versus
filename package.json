@@ -2,6 +2,12 @@
   "name": "versus",
   "version": "0.1.0",
   "description": "Find alternatives",
+  "dependencies": {
+    "express": "4.x"
+  },
+  "engines": {
+    "node" : "6.9.x"
+  },
   "scripts": {
     "start": "node server.js"
   },
