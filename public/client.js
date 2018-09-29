@@ -1,12 +1,10 @@
-const MAX_DEPTH = 2;
-
-class Versus {
-  constructor(seed, output) {
+class VersusModel {
+  constructor(seed) {
     this.seed = seed;
-    this.output = output;
     this.options = {};
     this.queue = [];
     this.outstandingFindCount = 0;
+    this.maxDepth = 2;
   }
 
   sortedOptionKeys() {
@@ -17,57 +15,6 @@ class Versus {
       if (depthdiff !== 0) return depthdiff;
       return options[b].count - options[a].count;
     });
-  }
-
-  renderOptionCount(keys) {
-    let count = $('<p class="option-count"><span class="count"></span> <span class="noun"></span><span class="postfix"></span></p>');
-    count.find('.count').text(keys.length);
-    count.find('.noun').text(keys.length === 1 ? 'option' : 'options');
-    count.find('.postfix').text(this.outstandingFindCount > 0 ? ', finding more…' : ':');
-    return count;
-  }
-
-  renderOption(key) {
-    let options = this.options;
-    let info = options[key];
-
-    let el = $('<p class="option"><a class="term" target="_blank"></a> <span class="count"></span> <span class="chain"></span></p>')
-
-    let term = el.find('.term');
-    term.text(key);
-    term.attr('href', `https://www.google.com/search?${$.param({q: key})}`);
-
-    el.find('.count').text(`${info.count}`);
-
-    let chain = el.find('.chain');
-
-    let i = info;
-    while (i.source) {
-      let link = $('<span class="chain-link"> &larr; <span class="chain-link-key"></span></span>');
-      link.find('.chain-link-key').text(i.source);
-      chain.append(link);
-      i = options[i.source];
-    }
-
-    return el;
-  }
-
-  render() {
-    let options = this.options;
-    let output = this.output;
-
-    if (!this.seed) {
-      output.empty();
-      return;
-    }
-
-    let keys = this.sortedOptionKeys();
-
-    let elements = keys.map(key => this.renderOption(key))
-    elements.unshift(this.renderOptionCount(keys));
-
-    output.empty();
-    output.append(elements);
   }
 
   fetchAlternatives(term, callback) {
@@ -87,9 +34,14 @@ class Versus {
       } else {
         let option = options[term];
         options[alternative] = {source: term, depth: option.depth + 1, count: 1};
-        if (options[alternative].depth < MAX_DEPTH) this.findAlternatives(alternative);
+        if (options[alternative].depth < this.maxDepth) this.findAlternatives(alternative);
       }
     })
+  }
+
+  callDelegate() {
+    if (!this.delegate) return;
+    this.delegate.onAlternativesUpdated();
   }
 
   findAlternatives(term) {
@@ -98,44 +50,136 @@ class Versus {
     this.fetchAlternatives(term, alternatives => {
       this.processAlternatives(term, alternatives);
       this.outstandingFindCount--;
-      this.render();
+      this.callDelegate();
     })
   }
 
   start() {
     let seed = this.seed;
     if (seed) this.options[seed] = {depth: 0, count: 1};
-    this.render();
+    this.callDelegate();
     this.findAlternatives(seed);
   }
 }
 
-$(document).ready(() => {
-  let form = $('#form');
-  let input = form.find('input[name=seed]');
-  let output = $('#output');
+class VersusView {
+  constructor(el, model) {
+    this.model = model;
+    this.el = $(el);
+    this.form.on('submit', event => this.onSubmit(event));
+  }
 
-  form.on('submit', event => {
+  get form() {
+    return this.el.find('.main-form');
+  }
+
+  get input() {
+    return this.form.find('input[name=seed]');
+  }
+
+  get output() {
+    return this.el.find('.output');
+  }
+
+  get optionCountTemplate() {
+    return '<p class="option-count"><span class="count"></span> <span class="noun"></span><span class="postfix"></span></p>';
+  }
+
+  get optionTemplate() {
+    return '<p class="option"><a class="term" target="_blank"></a> <span class="count"></span> <span class="chain"></span></p>';
+  }
+
+  get chainLinkTemplate() {
+    return '<span class="chain-link"> &larr; <span class="chain-link-key"></span></span>';
+  }
+
+  googleSearchUrl(q) {
+    return `https://www.google.com/search?${$.param({q})}`
+  }
+
+  setModelFromSeed(seed) {
+    this.model = new VersusModel(seed);
+    this.model.delegate = this;
+    this.model.start();
+  }
+
+  setSeed(seed) {
+    this.input.val(seed);
+    this.setModelFromSeed(seed);
+  }
+
+  onSubmit(event) {
     event.preventDefault();
-    let seed = input.val().trim();
+    let seed = this.input.val().trim();
     let search = seed ? `/?seed=${seed}` : '/';
     history.pushState(null, null, search);
-    let versus = new Versus(seed, output);
-    versus.start();
-  })
+    this.setModelFromSeed(seed);
+  }
+
+  onAlternativesUpdated() {
+    this.render();
+  }
+
+  renderOptionCount(keys) {
+    let count = $(this.optionCountTemplate);
+    count.find('.count').text(keys.length);
+    count.find('.noun').text(keys.length === 1 ? 'option' : 'options');
+    count.find('.postfix').text(this.model.outstandingFindCount > 0 ? ', finding more…' : ':');
+    return count;
+  }
+
+  renderOption(key) {
+    let options = this.model.options;
+    let info = options[key];
+
+    let p = $(this.optionTemplate)
+
+    let term = p.find('.term');
+    term.text(key);
+    term.attr('href', this.googleSearchUrl(key));
+
+    p.find('.count').text(`${info.count}`);
+
+    let chain = p.find('.chain');
+
+    let i = info;
+    while (i.source) {
+      let link = $(this.chainLinkTemplate);
+      link.find('.chain-link-key').text(i.source);
+      chain.append(link);
+      i = options[i.source];
+    }
+
+    return p;
+  }
+
+  render() {
+    if (!this.model || !this.model.seed) {
+      this.output.empty();
+      return;
+    }
+
+    let keys = this.model.sortedOptionKeys();
+
+    let elements = keys.map(key => this.renderOption(key))
+    elements.unshift(this.renderOptionCount(keys));
+
+    this.output.empty();
+    this.output.append(elements);
+  }
+}
+
+$(document).ready(() => {
+  let el = $('#versus-view');
+  let view = new VersusView(el);
 
   function updateFromParams() {
-    console.log('updating from params', window.location)
     let params = new URLSearchParams(window.location.search);
     let seed = params.get('seed');
-    input.val(seed);
-    let versus = new Versus(seed, output);
-    versus.start();
+    view.setSeed(seed);
   }
 
-  window.onpopstate = event => {
-    console.log('popstate');
-    updateFromParams();
-  }
+  window.onpopstate = updateFromParams;
+
   updateFromParams();
 })
