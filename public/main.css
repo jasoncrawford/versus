@@ -1,5 +1,5 @@
-.title {
-  margin-top: 60px;
+.container {
+  margin: 60px auto;
 }
 
 .tagline {
@@ -45,4 +45,8 @@
 
 .error-detail {
   color: #ccc;
+}
+
+.about, .about:hover {
+  color: #aaa;
 }
