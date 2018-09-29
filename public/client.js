@@ -106,12 +106,32 @@ class Versus {
 
 $(document).ready(() => {
   let form = $('#form');
+  let input = form.find('input[name=seed]');
   let output = $('#output');
 
   form.on('submit', event => {
     event.preventDefault();
-    let input = form.find('input[name=seed]');
-    let versus = new Versus(input.val(), output);
+    let seed = input.val().trim();
+    let search = seed ? `/?seed=${seed}` : '/';
+    history.pushState(null, null, search);
+    let versus = new Versus(seed, output);
     versus.start();
   })
+
+  function updateFromParams() {
+    console.log('updating from params', window.location)
+    let params = new URLSearchParams(window.location.search);
+    if (params.has('seed')) {
+      let seed = params.get('seed');
+      input.val(seed);
+      let versus = new Versus(seed, output);
+      versus.start();
+    }
+  }
+
+  window.onpopstate = event => {
+    console.log('popstate');
+    updateFromParams();
+  }
+  updateFromParams();
 })
