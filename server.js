@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const https = require('https');
 const querystring = require('querystring');
+const htmlEntities = require('html-entities');
 
 let app = express();
 let port = process.env['PORT'] || 3000;
@@ -44,6 +45,7 @@ const findAlternatives = async term => {
   alternatives = [].concat.apply([], alternatives); // flatten
   alternatives = alternatives.map(a => {
     a = a.trim();
+    a = htmlEntities.Html5Entities.decode(a); // translate HTML entities such as 'trader joe&#39;s'
     a = a.replace(/ 20\d\d$/, '');  // eliminate the 'foo 2018' pattern
     a = a.replace(/ reddit$/, '');  // eliminate the 'foo reddit' pattern
     return a;
