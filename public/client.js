@@ -1,6 +1,6 @@
 class VersusModel {
   constructor(seed) {
-    this.seed = seed;
+    this.seed = (seed || '').toLowerCase();
     this.options = {};
     this.queue = [];
     this.outstandingFindCount = 0;
