@@ -39,31 +39,34 @@ async function findAlternatives(term) {
   return alternatives.filter(a => a); // compact
 }
 
-app.get('/', async (request, response) => {
-  try {
-    let seed = request.query['seed'];
-    response.render('index', {seed});
-  } catch (error) {
-    response.status(500).send(error.message);
-  }
-})
+const wrap = fn => (request, response, next) => Promise.resolve(fn(request, response)).catch(next);
 
-app.get('/about', async (request, response) => {
-  try {
-    response.render('about');
-  } catch (error) {
-    response.status(500).send(error.message);
-  }
-})
+app.get('/', wrap(async (request, response) => {
+  let seed = request.query['seed'];
+  response.render('index', {seed});
+}))
 
-app.get('/alternatives', async (request, response) => {
-  try {
-    let term = request.query['term'];
-    let alternatives = await findAlternatives(term);
-    response.send(alternatives);
-  } catch (error) {
-    response.status(500).send(error.message);
-  }
+app.get('/about', wrap(async (request, response) => {
+  response.render('about');
+}))
+
+app.get('/alternatives', wrap(async (request, response) => {
+  let term = request.query['term'];
+  let alternatives = await findAlternatives(term);
+  response.send(alternatives);
+}))
+
+app.get('*', wrap(async (request, response) => {
+  response.status(404).render('404');
+}))
+
+app.use(async (error, request, response, next) => {
+  console.error(error.stack);
+  let message = error.message;
+  response.status(500).format({
+    html: () => response.render('500', {message}),
+    json: () => response.send(message),
+  })
 })
 
 app.listen(port, () => console.log(`Listening on port ${port}`));

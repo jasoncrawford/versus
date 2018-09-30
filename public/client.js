@@ -21,6 +21,7 @@ class VersusModel {
     let queryString = $.param({term});
     let url = `/alternatives?${queryString}`;
     $.ajax(url, {
+      dataType: 'json',
       success: callback,
       error: (xhr, status) => {
         let detail = xhr && `${xhr.statusText}: ${xhr.responseText}`;
