@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Versus: Find alternatives</title>
-    <meta name="description" content="Enter a product or service, find relevant alternatives to compare"/>
+    <!-- Note: this logic is duplicated client-side -->
+    <% if (seed) { %>
+      <title>Versus: "<%= seed %>" alternatives</title>
+      <meta name="description" content="Alternatives to &quot;<%= seed %>&quot;, sourced from the web"/>
+    <% } else { %>
+      <title>Versus: Find alternatives</title>
+      <meta name="description" content="Enter a product or service, find relevant alternatives to compare"/>
+    <% } %>
     <% include head %>
   </head>
   <body>

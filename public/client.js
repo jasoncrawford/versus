@@ -170,7 +170,13 @@ class VersusView {
   }
 
   render() {
-    if (!this.model || !this.model.seed) {
+    let seed = this.model && this.model.seed;
+
+    // Note: This logic is duplicated server-side in views/index.ejs
+    let tagline = seed ? `"${seed}" alternatives` : 'Find alternatives';
+    document.title = `Versus: ${tagline}`;
+
+    if (!seed) {
       this.output.empty();
       return;
     }

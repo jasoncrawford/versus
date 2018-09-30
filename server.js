@@ -57,7 +57,8 @@ const findAlternatives = async term => {
 
 app.get('/', async (request, response) => {
   try {
-    response.render('index');
+    let seed = request.query['seed'];
+    response.render('index', {seed});
   } catch (error) {
     response.status(500).send(error.message);
   }
