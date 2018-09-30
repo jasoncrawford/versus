@@ -12,7 +12,7 @@ app.set('view engine', 'ejs');
 
 app.use(express.static('public'));
 
-const fetchCompletions = async q => {
+async function fetchCompletions(q) {
   let queryString = querystring.stringify({q, client: 'psy-ab'});
   let url = `https://www.google.com/complete/search?${queryString}`;
   let body = await request(url);
@@ -20,7 +20,7 @@ const fetchCompletions = async q => {
   return data[1].map(item => item[0]);
 }
 
-const findAlternatives = async term => {
+async function findAlternatives(term) {
   let q = `${term} vs `;
   let completions = await fetchCompletions(q);
   let alternatives = completions.map(completion => {
