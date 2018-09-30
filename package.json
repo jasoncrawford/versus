@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Find alternatives",
   "dependencies": {
+    "ejs": "~2.6.1",
     "express": "~4.16.3",
     "html-entities": "~1.2.1"
   },

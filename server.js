@@ -7,6 +7,8 @@ const htmlEntities = require('html-entities');
 let app = express();
 let port = process.env['PORT'] || 3000;
 
+app.set('view engine', 'ejs');
+
 app.use(express.static('public'));
 
 const get = url => {
@@ -52,6 +54,22 @@ const findAlternatives = async term => {
   })
   return alternatives.filter(a => a); // compact
 }
+
+app.get('/', async (request, response) => {
+  try {
+    response.render('index');
+  } catch (error) {
+    response.status(500).send(error.message);
+  }
+})
+
+app.get('/about', async (request, response) => {
+  try {
+    response.render('about');
+  } catch (error) {
+    response.status(500).send(error.message);
+  }
+})
 
 app.get('/alternatives', async (request, response) => {
   try {
